@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Asset Graph</title>
+
+    <!-- Vis Network library -->
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #controls {
+            margin-bottom: 10px;
+        }
+
+        #graph {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+        }
+
+        #loading {
+            display: none;
+            margin-top: 10px;
+            color: #555;
+        }
+
+        input {
+            width: 300px;
+            padding: 6px;
+        }
+
+        button {
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Asset Relationship Graph</h2>
+
+<!-- Controls -->
+<div id="controls">
+    <input id="assetsInput" placeholder="Enter assets (comma separated)" />
+    <button onclick="generateAIGraph()">Generate AI Graph</button>
+</div>
+
+<div id="loading">Generating AI graph...</div>
+
+<!-- Graph -->
+<div id="graph"></div>
+
+<script>
+let network = null;
+
+async function generateAIGraph() {
+    const input = document.getElementById("assetsInput").value;
+
+    const assets = input
+        .split(",")
+        .map(a => a.trim())
+        .filter(Boolean);
+
+    if (assets.length === 0) {
+        alert("Please enter at least one asset");
+        return;
+    }
+
+    const container = document.getElementById("graph");
+    const loading = document.getElementById("loading");
+
+    loading.style.display = "block";
+    container.innerHTML = "";
+
+    try {
+        const response = await fetch("http://localhost:8000/ai/graph", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ assets })
+        });
+
+        const data = await response.json();
+
+        console.log("nodes:", data.nodes?.length);
+        console.log("edges:", data.edges?.length);
+
+        if (!data.nodes || !data.edges) {
+            container.innerHTML = "Invalid AI response";
+            return;
+        }
+
+        const colorMap = {
+            "active": "#4CAF50",
+            "stale": "#FFC107",
+            "inactive": "#F44336"
+        };
+
+        const nodes = new vis.DataSet(
+            data.nodes.map(node => ({
+                id: node.id,
+                label: node.id,
+                shape: "dot",
+                size: 14,
+                color: colorMap[node.status] || "#2196F3"
+            }))
+        );
+
+        const edges = new vis.DataSet(
+            data.edges.map(edge => ({
+                from: edge.from,
+                to: edge.to,
+                label: edge.label || "",
+                arrows: "to",
+                font: { align: "middle" }
+            }))
+        );
+
+        const options = {
+            physics: {
+                enabled: true,
+                stabilization: {
+                    iterations: 150
+                }
+            },
+            layout: {
+                improvedLayout: true
+            },
+            interaction: {
+                hover: true,
+                navigationButtons: true,
+                zoomView: true
+            },
+            edges: {
+                smooth: true
+            }
+        };
+
+        // destroy previous network if exists
+        if (network) {
+            network.destroy();
+        }
+
+        network = new vis.Network(container, { nodes, edges }, options);
+
+        network.once("stabilizationIterationsDone", function () {
+            network.fit({ animation: true });
+        });
+
+    } catch (error) {
+        console.error("Graph loading error:", error);
+        container.innerHTML = "Failed to load graph";
+    } finally {
+        loading.style.display = "none";
+    }
+}
+
+// optional: auto-load default graph
+// generateAIGraph();
+</script>
+
+</body>
+</html>

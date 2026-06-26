@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# Pytest
+.pytest_cache/
+
+# VS Code
+.vscode/
+
+# Alembic
+*.db
+
+# Docker
+postgres_data/
+
+# macOS
+.DS_Store

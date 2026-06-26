@@ -24,23 +24,27 @@ It supports:
 ---
 
 ## Project Structure
-app/
-├── main.py
-├── models.py
-├── schemas.py
-├── database.py
-├── auth.py
-├── routers/
-│   ├── assets.py
-│   ├── relationships.py
-│   ├── importer.py
-├── services/
-tests/
-frontend/
-├── index.html
-alembic/
 
----
+```text
+.
+├── app/
+│   ├── main.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── database.py
+│   ├── auth.py
+│   ├── routers/
+│   │   ├── assets.py
+│   │   ├── relationships.py
+│   │   └── importer.py
+│   └── services/
+├── tests/
+├── frontend/
+│   └── index.html
+├── alembic/
+├── requirements.txt
+└── README.md
+```
 
 ## Setup Instructions
 
